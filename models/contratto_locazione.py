@@ -1,22 +1,12 @@
-from models.immobile import Immobile
-from models.conduttore import Conduttore
-
 class Contratto:    # durata contratto è espressa in mesi
-    def __init__(self, id_contratto: str, immobile: Immobile, lista_conduttori: list[Conduttore], durata_contratto: int, data_inizio: str, data_fine: str, canone_mensile: float):
+    def __init__(self):
         self._id_contratto = None
-        self.id_contratto = id_contratto
-        self._immobile = None
-        self.immobile = immobile
-        self._lista_conduttori = None
-        self.lista_conduttori = lista_conduttori
+        self._id_immobile = None
+        self._lista_id_conduttori = None
         self._durata_contratto = None
-        self.durata_contratto = durata_contratto
         self._data_inizio = None
-        self.data_inizio = data_inizio
         self._data_fine = None
-        self.data_fine = data_fine
         self._canone_mensile = None
-        self.canone_mensile = canone_mensile
 
     @property
     def id_contratto(self):
@@ -25,33 +15,34 @@ class Contratto:    # durata contratto è espressa in mesi
     @id_contratto.setter    # è necessario un controllo su id_contratto, è nella forma CL1
     def id_contratto(self, id_contratto):
         parte_let = ""
-        parte_num = -1
+        parte_num = ""
         for c in id_contratto:
             if c.isalpha():
                 parte_let += c
             if c.isnumeric():
                 parte_num += c
+        parte_num = int(parte_num)
         if parte_let.lower() != "cl" or parte_num <= 0:
             raise ValueError("Id contratto non valido!!")
         self._id_contratto = id_contratto
 
     @property
-    def immobile(self):
-        return self._immobile
+    def id_immobile(self):
+        return self._id_immobile
 
-    @immobile.setter
-    def immobile(self, immobile):
-        self._immobile = immobile
+    @id_immobile.setter
+    def id_immobile(self, id_immobile):
+        self._id_immobile = id_immobile
 
     @property
-    def lista_conduttori(self):
-        return self._lista_conduttori
+    def lista_id_conduttori(self):
+        return self._lista_id_conduttori
 
-    @lista_conduttori.setter
-    def lista_conduttori(self, lista_conduttori: list[Conduttore]):
-        if len(lista_conduttori) == 0:
+    @lista_id_conduttori.setter
+    def lista_id_conduttori(self, lista_id_conduttori: list[str]):
+        if len(lista_id_conduttori) == 0:
             raise ValueError("Assegna almeno un conduttore!!")
-        self._lista_conduttori = lista_conduttori
+        self._lista_id_conduttori = lista_id_conduttori
 
     @property
     def durata_contratto(self):
@@ -89,3 +80,25 @@ class Contratto:    # durata contratto è espressa in mesi
             raise ValueError("Impossibile assegnare canone mensile negativo!!")
         self._canone_mensile = canone_mensile
 
+    def to_dict(self):
+        return {
+            "id_contratto": self.id_contratto,
+            "id_immobile": self.id_immobile,
+            "lista_id_conduttori": self.lista_id_conduttori,
+            "durata_contratto": self.durata_contratto,
+            "data_inizio": self.data_inizio,
+            "data_fine": self.data_fine,
+            "canone_mensile": self.canone_mensile
+        }
+
+    @staticmethod
+    def from_dict(data: dict):
+        con = Contratto()
+        con.id_contratto = data.get("id_contratto")
+        con.id_immobile = data.get("id_immobile")
+        con.lista_id_conduttori = data.get("lista_id_conduttori")
+        con.durata_contratto = data.get("durata_contratto")
+        con.data_inizio = data.get("data_inizio")
+        con.data_fine = data.get("data_fine")
+        con.canone_mensile = data.get("canone_mensile")
+        return con

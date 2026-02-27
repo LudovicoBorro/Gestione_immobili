@@ -1,5 +1,3 @@
-from models.amministratore import Amministratore
-
 class Immobile:
     def __init__(self):             #   id_immobile: str, nome: str, indirizzo: str, citta: str, data_acquisto: str, foglio_cat: int, numero_cat: int,
                                     #    sublocazione_cat: int, prezzo_acq: float, num_locali: int, metratura: float, spese_notarili: float, spese_condominiali: float
@@ -16,7 +14,7 @@ class Immobile:
         self._metratura = None
         self._spese_notarili = None
         self._spese_condominiali = None
-        self._amministratore = None
+        self._id_amministratore = None
         self._tipo_immobile = None
         self._stato_loc = None
 
@@ -27,12 +25,13 @@ class Immobile:
     @id_immobile.setter     # è necessario un controllo su id_immobile perchè deve essere nella forma IMM1
     def id_immobile(self, id_immobile: str):
         parte_let = ""
-        parte_num = -1
+        parte_num = ""
         for c in id_immobile:
             if c.isalpha():
                 parte_let += c
             if c.isnumeric():
                 parte_num += c
+        parte_num = int(parte_num)
         if parte_let.lower() != "imm" or parte_num <= 0:
             raise ValueError("Id immobile errato!!")
         self._id_immobile = id_immobile
@@ -59,10 +58,7 @@ class Immobile:
 
     @citta.setter
     def citta(self, citta: str):
-        if citta.isalpha():
-            self._citta = citta
-        else:
-            raise ValueError("Città non valida!!")
+        self._citta = citta
 
     @property
     def data_acquisto(self):
@@ -78,7 +74,7 @@ class Immobile:
 
     @foglio_cat.setter
     def foglio_cat(self, foglio_cat: int):
-        if foglio_cat < 0 or foglio_cat is not int:
+        if not isinstance(foglio_cat, int) or foglio_cat < 0:
             raise ValueError("Foglio catastale errato!!")
         self._foglio_cat = foglio_cat
 
@@ -88,7 +84,7 @@ class Immobile:
 
     @numero_cat.setter
     def numero_cat(self, numero_cat: int):
-        if numero_cat < 0 or numero_cat is not int:
+        if not isinstance(numero_cat, int) or numero_cat < 0:
             raise ValueError("Numero catastale errato!!")
         self._numero_cat = numero_cat
 
@@ -98,7 +94,7 @@ class Immobile:
 
     @sublocazione_cat.setter
     def sublocazione_cat(self, sublocazione_cat: int):
-        if sublocazione_cat < 0 or sublocazione_cat is not int:
+        if not isinstance(sublocazione_cat, int) or sublocazione_cat < 0:
             raise ValueError("Sublocazione catastale errata!!")
 
     @property
@@ -117,7 +113,7 @@ class Immobile:
 
     @num_locali.setter
     def num_locali(self, num_locali: int):
-        if num_locali <= 0 or num_locali is not int:
+        if not isinstance(num_locali, int) or num_locali <= 0:
             raise ValueError("Numero locali errato!!")
         self._num_locali = num_locali
 
@@ -152,12 +148,12 @@ class Immobile:
         self._spese_condominiali = spese_condominiali
 
     @property
-    def amministratore(self):
-        return self._amministratore
+    def id_amministratore(self):
+        return self._id_amministratore
 
-    @amministratore.setter
-    def amministratore(self, amministratore: Amministratore):
-        self._amministratore = amministratore
+    @id_amministratore.setter
+    def id_amministratore(self, id_amministratore: str):
+        self._id_amministratore = id_amministratore
 
     @property
     def tipo_immobile(self):
@@ -183,4 +179,43 @@ class Immobile:
         else:
             raise ValueError("Stato immobile non valido!!")
 
+    def to_dict(self):
+        return {
+            "id_immobile": self.id_immobile,
+            "nome": self.nome,
+            "indirizzo": self.indirizzo,
+            "citta": self.citta,
+            "data_acquisto": self.data_acquisto,
+            "foglio_cat": self.foglio_cat,
+            "numero_cat": self.numero_cat,
+            "sublocazione_cat": self.sublocazione_cat,
+            "prezzo_acq": self.prezzo_acq,
+            "num_locali": self.num_locali,
+            "metratura": self.metratura,
+            "spese_notarili": self.spese_notarili,
+            "spese_condominiali": self.spese_condominiali,
+            "id_amministratore": self.id_amministratore,
+            "tipo_immobile": self.tipo_immobile,
+            "stato_loc": self.stato_loc
+        }
 
+    @staticmethod
+    def from_dict(data: dict):
+        imm = Immobile()
+        imm.id_immobile = data.get("id_immobile")
+        imm.nome = data.get("nome")
+        imm.indirizzo = data.get("indirizzo")
+        imm.citta = data.get("citta")
+        imm.data_acquisto = data.get("data_acquisto")
+        imm.foglio_cat = data.get("foglio_cat")
+        imm.numero_cat = data.get("numero_cat")
+        imm.sublocazione_cat = data.get("sublocazione_cat")
+        imm.prezzo_acq = data.get("prezzo_acq")
+        imm.num_locali = data.get("num_locali")
+        imm.metratura = data.get("metratura")
+        imm.spese_notarili = data.get("spese_notarili")
+        imm.spese_condominiali = data.get("spese_condominiali")
+        imm.id_amministratore = data.get("id_amministratore")
+        imm.tipo_immobile = data.get("tipo_immobile")
+        imm.stato_loc = data.get("stato_loc")
+        return imm

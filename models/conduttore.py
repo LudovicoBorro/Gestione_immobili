@@ -1,19 +1,12 @@
 class Conduttore:
-    def __init__(self, id_conduttore: str, nome: str, cognome: str, contatto_tel: str, email: str, sesso: str, data_nascita: str):
+    def __init__(self):
         self._id_conduttore = None
-        self.id_conduttore = id_conduttore
         self._nome = None
-        self.nome = nome
         self._cognome = None
-        self.cognome = cognome
         self._contatto_tel = None
-        self.contatto_tel = contatto_tel
         self._email = None
-        self.email = email
         self._sesso = None
-        self.sesso = sesso
         self._data_nascita = None
-        self.data_nascita = data_nascita
 
     @property
     def id_conduttore(self):
@@ -22,12 +15,13 @@ class Conduttore:
     @id_conduttore.setter       # id conduttore è nella forma CO1
     def id_conduttore(self, id_conduttore: str):
         parte_let = ""
-        parte_num = -1
+        parte_num = ""
         for c in id_conduttore:
             if c.isalpha():
                 parte_let += c
             if c.isnumeric():
                 parte_num += c
+        parte_num = int(parte_num)
         if parte_let.lower() != "co" or parte_num <= 0:
             raise ValueError("Id conduttore non valido!!")
         self._id_conduttore = id_conduttore
@@ -38,10 +32,7 @@ class Conduttore:
 
     @nome.setter
     def nome(self, nome):
-        if nome.isalpha():
-            self._nome = nome
-        else:
-            raise ValueError("Attenzione, nome non valido!!")
+        self._nome = nome
 
     @property
     def cognome(self):
@@ -49,10 +40,7 @@ class Conduttore:
 
     @cognome.setter
     def cognome(self, cognome):
-        if cognome.isalpha():
-            self._cognome = cognome
-        else:
-            raise ValueError("Attenzione, cognome non valido!!")
+        self._cognome = cognome
 
     @property
     def contatto_tel(self):
@@ -92,4 +80,25 @@ class Conduttore:
     def data_nascita(self, data_nascita: str):
         self._data_nascita = data_nascita
 
+    def to_dict(self):
+        return {
+            "id_conduttore": self._id_conduttore,
+            "nome": self._nome,
+            "cognome": self._cognome,
+            "contatto_tel": self._contatto_tel,
+            "email": self._email,
+            "sesso": self._sesso,
+            "data_nascita": self._data_nascita
+        }
 
+    @staticmethod
+    def from_dict(data: dict):
+        cond = Conduttore()
+        cond.id_conduttore = data.get("id_conduttore")
+        cond.nome = data.get("nome")
+        cond.cognome = data.get("cognome")
+        cond.contatto_tel = data.get("contatto_tel")
+        cond.email = data.get("email")
+        cond.sesso = data.get("sesso")
+        cond.data_nascita = data.get("data_nascita")
+        return cond
