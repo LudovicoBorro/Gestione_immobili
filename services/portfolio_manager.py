@@ -19,7 +19,7 @@ class Portfolio:
             raise ValueError("Immobile già esistente")
 
         # if immobile.id_amministratore not in self.amministratori: Non tutti gli immobili hanno degli amministratori
-            raise ValueError("Amministratore non esistente")
+            # raise ValueError("Amministratore non esistente")
 
         self.immobili[immobile.id_immobile] = immobile
 
@@ -74,3 +74,46 @@ class Portfolio:
             "conduttori": [c.to_dict() for c in self.conduttori.values()],
             "amministratori": [a.to_dict() for a in self.amministratori.values()],
         }
+
+    # Funzione per calcolare il totale dei canoni mensili da tutti gli immobili locati
+    def totale_canoni_mensili(self):
+        totale = 0
+        for c in self.contratti.values():
+            totale += c.canone_mensile
+        return totale
+
+    # Funzione che ritorna Immobili liberi (non locati)
+    def immobili_liberi(self):
+        immobili: list[Immobile] = []
+        for imm in self.immobili.values():
+            if imm.stato_loc == "libero":
+                immobili.append(imm)
+        return immobili
+
+    # Funzione che ritorna Immobili locati
+    def immobili_locati(self):
+        immobili: list[Immobile] = []
+        for imm in self.immobili.values():
+            if imm.stato_loc == "locato":
+                immobili.append(imm)
+        return immobili
+
+    # Funzione che ritorna Immobili a uso personale (non locati, non liberi)
+    def immobili_personali(self):
+        immobili: list[Immobile] = []
+        for imm in self.immobili.values():
+            if imm.stato_loc == "personale":
+                immobili.append(imm)
+        return immobili
+
+    # Funzione che ritorna i conduttori di un dato Contratto, attraverso id
+    def conduttori_immobile_per_id(self, id_cont: str):
+        conduttori: list[Conduttore] = []
+        try:
+            contr = self.trova_contratto_per_id(id_cont)
+            for cond in contr.lista_id_conduttori:
+                conduttore = self.trova_conduttore_per_id(cond)
+                conduttori.append(conduttore)
+        except ValueError as ve:
+            raise ValueError(f"Contratto {id_cont} non esistente!!")
+        return conduttori

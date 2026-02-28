@@ -102,3 +102,4 @@ class Contratto:    # durata contratto è espressa in mesi
         con.data_fine = data.get("data_fine")
         con.canone_mensile = data.get("canone_mensile")
         return con
+
