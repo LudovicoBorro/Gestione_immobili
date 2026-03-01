@@ -22,7 +22,7 @@ class Immobile:
     def id_immobile(self):
         return self._id_immobile
 
-    @id_immobile.setter     # è necessario un controllo su id_immobile perchè deve essere nella forma IMM1
+    @id_immobile.setter     # è necessario un controllo su id_immobile perchè deve essere nella forma IMM0001
     def id_immobile(self, id_immobile: str):
         parte_let = ""
         parte_num = ""

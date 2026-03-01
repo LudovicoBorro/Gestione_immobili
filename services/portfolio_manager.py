@@ -114,6 +114,94 @@ class Portfolio:
             for cond in contr.lista_id_conduttori:
                 conduttore = self.trova_conduttore_per_id(cond)
                 conduttori.append(conduttore)
-        except ValueError as ve:
+        except ValueError:
             raise ValueError(f"Contratto {id_cont} non esistente!!")
         return conduttori
+
+    # Funzione per creare un immobile e salvarlo
+    def crea_immobile(self, nome: str, indirizzo: str, citta: str, data_acquisto: str, foglio_cat: int, numero_cat: int,
+                      sublocazione_cat: int, prezzo_acq: float, num_locali: int, metratura: float, spese_notarili: float, spese_condominiali: float, tipo_immobile: str, stato_loc: str, id_amministratore: str):
+        try:
+            imm = Immobile()
+            imm.id_immobile = self.genera_id(self.immobili, "IMM")
+            imm.nome = nome
+            imm.indirizzo = indirizzo
+            imm.citta = citta
+            imm.data_acquisto = data_acquisto
+            imm.foglio = foglio_cat
+            imm.numero = numero_cat
+            imm.sublocazione_cat = sublocazione_cat
+            imm.prezzo_acq = prezzo_acq
+            imm.num_locali = num_locali
+            imm.metratura = metratura
+            imm.spese_notarili = spese_notarili
+            imm.spese_condominiali = spese_condominiali
+            imm.tipo_immobile = tipo_immobile           # Il controllo sugli input lo faccio nel main non qui, quindi il controllo locato, personale, libero ecc
+            imm.stato_loc = stato_loc
+            imm.id_amministratore = id_amministratore   # La scelta dell'amministratore la gestisco negli input, quindi l'utente dovrà poter scegliere tra amm vecchi o crearne uno nuovo
+            self.immobili[imm.id_immobile] = imm
+            return imm
+        except ValueError as ve:
+            raise ValueError(f"Errore nella creazione dell'immobile: {ve}")
+
+    # Funzione per creare contratto e salvarlo
+    def crea_contratto(self, id_immobile: str, lista_id_conduttori: list[str], durata_contratto: int, data_inizio: str, data_fine: str, canone_mensile: float):
+        try:
+            cont = Contratto()
+            cont.id_contratto = self.genera_id(self.contratti, "CL")
+            cont.id_immobile = id_immobile
+            cont.lista_id_conduttori = lista_id_conduttori
+            cont.durata_contratto = durata_contratto
+            cont.data_inizio = data_inizio
+            cont.data_fine = data_fine
+            cont.canone_mensile = canone_mensile
+            self.contratti[cont.id_contratto] = cont
+            return cont
+        except ValueError as ve:
+            raise ValueError(f"Errore nella creazione del contratto: {ve}")
+
+    # Funzione per creare conduttore e salvarlo
+    def crea_conduttore(self, nome: str, cognome: str, contatto_tel: str, email: str, sesso: str, data_nascita: str):
+        try:
+            cond = Conduttore()
+            cond.id_conduttore = self.genera_id(self.conduttori, "CO")
+            cond.nome = nome
+            cond.cognome = cognome
+            cond.contatto_tel = contatto_tel
+            cond.email = email
+            cond.sesso = sesso
+            cond.data_nascita = data_nascita
+            self.conduttori[cond.id_conduttore] = cond
+            return cond
+        except ValueError as ve:
+            raise ValueError(f"Errore nella creazione del conduttore: {ve}")
+
+    # Funzione per creare amministratore e salvarlo
+    def crea_amministratore(self, nome: str, cognome: str, contatto_tel: str, email: str, indirizzo_ufficio: str):
+        try:
+            amm = Amministratore()
+            amm.id_amministratore = self.genera_id(self.amministratori, "AMM")
+            amm.nome = nome
+            amm.cognome = cognome
+            amm.contatto_tel = contatto_tel
+            amm.email = email
+            amm.indirizzo_ufficio = indirizzo_ufficio
+            self.amministratori[amm.id_amministratore] = amm
+            return amm
+        except ValueError as ve:
+            raise ValueError(f"Errore nella creazione dell' amministratore: {ve}")
+
+    # FUNZIONE PER GENERAZIONE ID
+    @classmethod
+    def genera_id(cls, dizionario: dict, prefisso: str) -> str:
+
+        if not dizionario:
+            return f"{prefisso}0001"
+
+        numeri = [
+            int(id_elem.replace(prefisso, ""))
+            for id_elem in dizionario.keys()
+        ]
+
+        prossimo_numero = max(numeri) + 1
+        return f"{prefisso}{prossimo_numero:04d}"

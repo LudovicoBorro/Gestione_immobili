@@ -12,7 +12,7 @@ class Contratto:    # durata contratto è espressa in mesi
     def id_contratto(self):
         return self._id_contratto
 
-    @id_contratto.setter    # è necessario un controllo su id_contratto, è nella forma CL1
+    @id_contratto.setter    # è necessario un controllo su id_contratto, è nella forma CL0001
     def id_contratto(self, id_contratto):
         parte_let = ""
         parte_num = ""
@@ -49,7 +49,7 @@ class Contratto:    # durata contratto è espressa in mesi
         return self._durata_contratto
 
     @durata_contratto.setter
-    def durata_contratto(self, durata_contratto):
+    def durata_contratto(self, durata_contratto: int):
         if durata_contratto <= 0:
             raise ValueError("Impossibile assegnare durata negativa!!")
         self._durata_contratto = durata_contratto

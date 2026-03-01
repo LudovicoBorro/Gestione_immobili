@@ -12,7 +12,7 @@ class Conduttore:
     def id_conduttore(self):
         return self._id_conduttore
 
-    @id_conduttore.setter       # id conduttore è nella forma CO1
+    @id_conduttore.setter       # id conduttore è nella forma CO0001
     def id_conduttore(self, id_conduttore: str):
         parte_let = ""
         parte_num = ""

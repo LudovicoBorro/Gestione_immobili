@@ -11,7 +11,7 @@ class Amministratore:
     def id_amministratore(self):
         return self._id_amministratore
 
-    @id_amministratore.setter   # id amministratore deve essere nella forma AMM1
+    @id_amministratore.setter   # id amministratore deve essere nella forma AMM0001
     def id_amministratore(self, id_amministratore: str):
         parte_let = ""
         parte_num = ""
