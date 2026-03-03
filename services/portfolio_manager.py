@@ -2,6 +2,7 @@ from models.amministratore import Amministratore
 from models.immobile import Immobile
 from models.contratto_locazione import Contratto
 from models.conduttore import Conduttore
+from datetime import datetime
 
 # Questa classe gestisce la logica del programma. I vari modelli non devono avere altri oggetti come attributi, ma solo id, dato che nei json
 # non è possibile salvare oggetti. In questa classe devo inserire anche funzioni utili, come calcolo rendimenti ecc. Per salvare dati uso
@@ -146,6 +147,13 @@ class Portfolio:
 
     # Funzione per creare contratto e salvarlo
     def crea_contratto(self, id_immobile: str, lista_id_conduttori: list[str], durata_contratto: int, data_inizio: str, data_fine: str, canone_mensile: float):
+        immobile = self.trova_immobile_per_id(id_immobile)
+
+        if immobile is None:
+            raise ValueError(f"Immobile {id_immobile} non esistente!!")
+        if immobile.stato_loc == "locato":
+            raise ValueError(f"Immobile {id_immobile} è già stato locato!")
+
         try:
             cont = Contratto()
             cont.id_contratto = self.genera_id(self.contratti, "CL")
@@ -156,6 +164,7 @@ class Portfolio:
             cont.data_fine = data_fine
             cont.canone_mensile = canone_mensile
             self.contratti[cont.id_contratto] = cont
+            immobile.stato_loc = "locato"
             return cont
         except ValueError as ve:
             raise ValueError(f"Errore nella creazione del contratto: {ve}")
@@ -190,6 +199,25 @@ class Portfolio:
             return amm
         except ValueError as ve:
             raise ValueError(f"Errore nella creazione dell' amministratore: {ve}")
+
+    # Funzione per chiudere un contratto cambiando stato_loc in immobile
+    def chiudi_contratto(self, id_contratto: str):
+
+        contratto = self.trova_contratto_per_id(id_contratto)
+        if contratto is None:
+            raise ValueError(f"Contratto {id_contratto} non esistente!!")
+        if contratto.stato == "chiuso":
+            raise ValueError("Il contratto è già chiuso!!")
+
+        immobile = self.trova_immobile_per_id(contratto.id_immobile)
+        if immobile is None:
+            raise ValueError(f"Immobile {contratto.id_immobile} non esistente!!")
+        if immobile.stato_loc != "locato":
+            raise ValueError("L'immobile non risulta attualmente locato!!")
+
+        contratto.data_fine_effettiva = datetime.now().strftime("%d/%m/%Y")
+        contratto.stato = "chiuso"
+        immobile.stato_loc = "libero"
 
     # FUNZIONE PER GENERAZIONE ID
     @classmethod

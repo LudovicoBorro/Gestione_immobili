@@ -1,3 +1,5 @@
+from datetime import datetime
+
 class Contratto:    # durata contratto è espressa in mesi
     def __init__(self):
         self._id_contratto = None
@@ -6,7 +8,9 @@ class Contratto:    # durata contratto è espressa in mesi
         self._durata_contratto = None
         self._data_inizio = None
         self._data_fine = None
+        self._data_fine_effettiva = None
         self._canone_mensile = None
+        self._stato = "attivo"
 
     @property
     def id_contratto(self):
@@ -79,6 +83,44 @@ class Contratto:    # durata contratto è espressa in mesi
         if canone_mensile <= 0:
             raise ValueError("Impossibile assegnare canone mensile negativo!!")
         self._canone_mensile = canone_mensile
+
+    @property
+    def stato(self):
+        return self._stato
+
+    @stato.setter
+    def stato(self, stato: str):
+        if stato.lower().strip() == "chiuso" or stato.lower().strip() == "attivo":
+            self._stato = stato
+        raise ValueError(f"Stato {stato} non valido!!")
+
+    @property
+    def data_fine_effettiva(self):
+        return self._data_fine_effettiva
+
+    @data_fine_effettiva.setter
+    def data_fine_effettiva(self, data_fine_effettiva: str):
+        self._data_fine_effettiva = data_fine_effettiva
+
+    def calcola_durata_effettiva(self):
+        if self.data_fine_effettiva is None:
+            raise ValueError("Il contratto non è ancora chiuso!!")
+
+        data_inizio = datetime.strptime(self.data_inizio, "%d/%m/%Y")
+        data_fine_effettiva = datetime.strptime(self.data_fine_effettiva, "%d/%m/%Y")
+
+        if data_fine_effettiva < data_inizio:
+            raise ValueError("La data di fine è precedente alla data di inizio!!")
+
+        mesi = (data_fine_effettiva.year - data_inizio.year) * 12 + \
+               (data_fine_effettiva.month - data_inizio.month)
+
+        # Se il giorno finale è minore del giorno iniziale,
+        # l'ultimo mese non è completo
+        if data_fine_effettiva.day < data_inizio.day:
+            mesi -= 1
+
+        return mesi
 
     def to_dict(self):
         return {
