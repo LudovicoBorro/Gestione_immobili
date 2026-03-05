@@ -121,7 +121,14 @@ class ContrattiView(ctk.CTkFrame):
             items = [c for c in items if
                      query in c.id_immobile.lower() or
                      query in c.id_contratto.lower() or
-                     any(query in cid.lower() for cid in c.lista_id_conduttori)]
+                     any(
+                         query in cid.lower() or
+                         query in (self.portfolio.trova_conduttore_per_id(cid).nome or "").lower() or
+                         query in (self.portfolio.trova_conduttore_per_id(cid).cognome or "").lower()
+                         for cid in (c.lista_id_conduttori or [])
+                         if self.portfolio.trova_conduttore_per_id(cid)
+                     )
+            ]
 
         for idx, cont in enumerate(items):
             bg = ROW_SEL if cont.id_contratto == self._selected_id else (ROW_EVEN if idx % 2 == 0 else ROW_ODD)

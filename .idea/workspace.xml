@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="123e7a4c-1e82-425f-a42d-90975a901857" name="Changes" comment="bug fixes">
+    <list default="true" id="123e7a4c-1e82-425f-a42d-90975a901857" name="Changes" comment="aggiunte views di conduttori e amministratori">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gui/views/contratti_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/views/contratti_view.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gui/views/immobili_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/views/immobili_view.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/portfolio_manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/portfolio_manager.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,7 +83,7 @@
       <workItem from="1772179239685" duration="4692000" />
       <workItem from="1772263076445" duration="5760000" />
       <workItem from="1772350475204" duration="6803000" />
-      <workItem from="1772739558898" duration="639000" />
+      <workItem from="1772739558898" duration="1606000" />
     </task>
     <task id="LOCAL-00001" summary="aggiunto portfolio per gestione logica e salvataggio dati, migliorato le classi e aggiunte funzioni per creare dizionari. Struttura molto vicina a database relazionale.">
       <option name="closed" value="true" />
@@ -133,7 +133,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772723553620</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="aggiunte views di conduttori e amministratori">
+      <option name="closed" value="true" />
+      <created>1772740352432</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1772740352432</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -155,7 +163,8 @@
     <MESSAGE value="aggiunta persistenza dati, vengono salvati su json. aggiunto main per caricare e salvare dati, aggiunte funzioni di business nel portfolio" />
     <MESSAGE value="introdotta interfaccia gui" />
     <MESSAGE value="bug fixes" />
-    <option name="LAST_COMMIT_MESSAGE" value="bug fixes" />
+    <MESSAGE value="aggiunte views di conduttori e amministratori" />
+    <option name="LAST_COMMIT_MESSAGE" value="aggiunte views di conduttori e amministratori" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

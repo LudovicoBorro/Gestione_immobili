@@ -231,7 +231,7 @@ class Portfolio:
             return f"{prefisso}0001"
 
         numeri = [
-            int(id_elem.replace(prefisso, ""))
+            int(id_elem[len(prefisso):])
             for id_elem in dizionario.keys()
         ]
 
