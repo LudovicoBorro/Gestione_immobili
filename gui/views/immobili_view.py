@@ -81,10 +81,10 @@ class ImmobiliView(ctk.CTkFrame):
         row.pack(fill="x", pady=(0, 16))
 
         cards = [
-            ("Totale",    lambda: len(self.portfolio.immobili),                 "#3b82f6"),
-            ("Locati",    lambda: len(self.portfolio.immobili_locati()),         SUCCESS),
-            ("Liberi",    lambda: len(self.portfolio.immobili_liberi()),         "#f59e0b"),
-            ("Personali", lambda: len(self.portfolio.immobili_personali()),      TEXT_M),
+            ("Totale",    lambda: len(self.portfolio.immobili),                "#3b82f6"),
+            ("Locati",    lambda: len(self.portfolio.immobili_locati()),        SUCCESS),
+            ("Liberi",    lambda: len(self.portfolio.immobili_liberi()),        "#f59e0b"),
+            ("Personali", lambda: len(self.portfolio.immobili_personali()),     TEXT_M),
         ]
         self._card_labels = {}
         for label, fn, color in cards:
@@ -102,10 +102,9 @@ class ImmobiliView(ctk.CTkFrame):
         wrapper = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=12)
         wrapper.pack(fill="both", expand=True)
 
-        # Header row
-        cols = ["ID", "Nome", "Città", "Tipo", "Stato", "Canone €/mese", "Metratura m²"]
+        cols    = ["ID", "Nome", "Città", "Tipo", "Stato", "Canone €/mese", "Metratura m²"]
         weights = [1, 2, 2, 1, 1, 2, 1]
-        header = ctk.CTkFrame(wrapper, fg_color="#131929", corner_radius=0)
+        header  = ctk.CTkFrame(wrapper, fg_color="#131929", corner_radius=0)
         header.pack(fill="x")
         for i, (col, w) in enumerate(zip(cols, weights)):
             header.columnconfigure(i, weight=w)
@@ -116,7 +115,6 @@ class ImmobiliView(ctk.CTkFrame):
                 text_color=TEXT_M
             ).grid(row=0, column=i, sticky="w", padx=12, pady=10)
 
-        # Scrollable rows
         self.table_scroll = ctk.CTkScrollableFrame(
             wrapper, fg_color="transparent", corner_radius=0
         )
@@ -136,8 +134,12 @@ class ImmobiliView(ctk.CTkFrame):
 
         query = self.search_var.get().lower()
         items = list(self.portfolio.immobili.values())
+
+        # FIX #1: protezione da nome/citta None nel filtro ricerca
         if query:
-            items = [i for i in items if query in i.nome.lower() or query in (i.citta or "").lower()]
+            items = [i for i in items
+                     if query in (i.nome or "").lower()
+                     or query in (i.citta or "").lower()]
 
         for idx, imm in enumerate(items):
             bg = ROW_SEL if imm.id_immobile == self._selected_id else (ROW_EVEN if idx % 2 == 0 else ROW_ODD)
@@ -145,7 +147,6 @@ class ImmobiliView(ctk.CTkFrame):
             row_frame.pack(fill="x")
             row_frame.pack_propagate(False)
 
-            # Find canone from active contract
             canone = "—"
             for c in self.portfolio.contratti.values():
                 if c.id_immobile == imm.id_immobile and c.stato == "attivo":
@@ -157,13 +158,13 @@ class ImmobiliView(ctk.CTkFrame):
             }.get(imm.stato_loc, TEXT_P)
 
             values = [
-                (imm.id_immobile, TEXT_M),
-                (imm.nome or "—", TEXT_P),
-                (imm.citta or "—", TEXT_P),
-                (imm.tipo_immobile or "—", TEXT_P),
-                (imm.stato_loc or "—", stato_color),
-                (canone, SUCCESS if canone != "—" else TEXT_M),
-                (f"{imm.metratura} m²" if imm.metratura else "—", TEXT_P),
+                (imm.id_immobile,                                        TEXT_M),
+                (imm.nome or "—",                                        TEXT_P),
+                (imm.citta or "—",                                       TEXT_P),
+                (imm.tipo_immobile or "—",                               TEXT_P),
+                (imm.stato_loc or "—",                                   stato_color),
+                (canone,                                                  SUCCESS if canone != "—" else TEXT_M),
+                (f"{imm.metratura} m²" if imm.metratura else "—",        TEXT_P),
             ]
             for i, (val, color) in enumerate(values):
                 lbl = ctk.CTkLabel(
@@ -191,6 +192,14 @@ class ImmobiliView(ctk.CTkFrame):
             messagebox.showerror("Errore", "Non puoi eliminare un immobile locato. Chiudi prima il contratto.")
             return
         if messagebox.askyesno("Conferma", f"Eliminare l'immobile '{imm.nome}'?"):
+            # FIX #4: rimuove anche i contratti chiusi collegati prima di eliminare l'immobile
+            contratti_da_rimuovere = [
+                cid for cid, c in self.portfolio.contratti.items()
+                if c.id_immobile == self._selected_id
+            ]
+            for cid in contratti_da_rimuovere:
+                del self.portfolio.contratti[cid]
+
             del self.portfolio.immobili[self._selected_id]
             self._selected_id = None
             self._refresh_table()
@@ -218,10 +227,10 @@ class ImmobiliView(ctk.CTkFrame):
 class ImmobileForm(ctk.CTkToplevel):
     def __init__(self, parent, portfolio, immobile: Immobile | None, on_save_cb):
         super().__init__(parent)
-        self.portfolio = portfolio
-        self.immobile = immobile
-        self.on_save_cb = on_save_cb
-        self.is_edit = immobile is not None
+        self.portfolio   = portfolio
+        self.immobile    = immobile
+        self.on_save_cb  = on_save_cb
+        self.is_edit     = immobile is not None
 
         self.title("Modifica Immobile" if self.is_edit else "Nuovo Immobile")
         self.geometry("560x680")
@@ -250,34 +259,30 @@ class ImmobileForm(ctk.CTkToplevel):
         self._entries = {}
 
         fields = [
-            ("nome",              "Nome immobile *",        "text"),
-            ("indirizzo",         "Indirizzo *",            "text"),
-            ("citta",             "Città *",                "text"),
-            ("data_acquisto",     "Data acquisto (gg/mm/aaaa)", "text"),
-            ("foglio_cat",        "Foglio catastale",       "int"),
-            ("numero_cat",        "Numero catastale",       "int"),
-            ("sublocazione_cat",  "Sublocazione catastale", "int"),
-            ("prezzo_acq",        "Prezzo acquisto (€) *",  "float"),
-            ("num_locali",        "Numero locali *",        "int"),
-            ("metratura",         "Metratura (m²) *",       "float"),
-            ("spese_notarili",    "Spese notarili (€)",     "float"),
-            ("spese_condominiali","Spese condominiali (€)", "float"),
+            ("nome",               "Nome immobile *",            "text"),
+            ("indirizzo",          "Indirizzo *",                "text"),
+            ("citta",              "Città *",                    "text"),
+            ("data_acquisto",      "Data acquisto (gg/mm/aaaa)", "text"),
+            ("foglio_cat",         "Foglio catastale",           "int"),
+            ("numero_cat",         "Numero catastale",           "int"),
+            ("sublocazione_cat",   "Sublocazione catastale",     "int"),
+            ("prezzo_acq",         "Prezzo acquisto (€) *",      "float"),
+            ("num_locali",         "Numero locali *",            "int"),
+            ("metratura",          "Metratura (m²) *",           "float"),
+            ("spese_notarili",     "Spese notarili (€)",         "float"),
+            ("spese_condominiali", "Spese condominiali (€)",     "float"),
         ]
 
         for key, label, _ in fields:
             self._field_row(scroll, key, label)
 
-        # Dropdowns
-        self._tipo_var = tk.StringVar(value="residenziale")
+        self._tipo_var  = tk.StringVar(value="residenziale")
         self._stato_var = tk.StringVar(value="libero")
 
-        self._dropdown_row(scroll, "Tipo immobile", self._tipo_var, ["residenziale", "commerciale"])
-        self._dropdown_row(scroll, "Stato locazione", self._stato_var, ["libero", "locato", "personale"])
-
-        # Amministratore (optional)
+        self._dropdown_row(scroll, "Tipo immobile",    self._tipo_var,  ["residenziale", "commerciale"])
+        self._dropdown_row(scroll, "Stato locazione",  self._stato_var, ["libero", "locato", "personale"])
         self._field_row(scroll, "id_amministratore", "ID Amministratore (opz.)")
 
-        # Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(fill="x", padx=16, pady=(0, 16))
 
@@ -334,33 +339,31 @@ class ImmobileForm(ctk.CTkToplevel):
             self._stato_var.set(imm.stato_loc)
 
     def _save(self):
-        def get(key): return self._entries[key].get().strip()
-        def get_float(key, default=0.0):
-            v = get(key)
-            return float(v) if v else default
-        def get_int(key, default=0):
-            v = get(key)
-            return int(v) if v else default
+        def get(key):             return self._entries[key].get().strip()
+        def get_float(key):
+            v = get(key); return float(v) if v else 0.0
+        def get_int(key):
+            v = get(key); return int(v) if v else 0
 
         try:
             if self.is_edit:
                 imm = self.immobile
-                imm.nome             = get("nome")
-                imm.indirizzo        = get("indirizzo")
-                imm.citta            = get("citta")
-                imm.data_acquisto    = get("data_acquisto")
-                imm.foglio_cat       = get_int("foglio_cat")
-                imm.numero_cat       = get_int("numero_cat")
-                imm.sublocazione_cat = get_int("sublocazione_cat")
-                imm.prezzo_acq       = get_float("prezzo_acq")
-                imm.num_locali       = get_int("num_locali")
-                imm.metratura        = get_float("metratura")
-                imm.spese_notarili   = get_float("spese_notarili")
+                imm.nome               = get("nome")
+                imm.indirizzo          = get("indirizzo")
+                imm.citta              = get("citta")
+                imm.data_acquisto      = get("data_acquisto")
+                imm.foglio_cat         = get_int("foglio_cat")
+                imm.numero_cat         = get_int("numero_cat")
+                imm.sublocazione_cat   = get_int("sublocazione_cat")
+                imm.prezzo_acq         = get_float("prezzo_acq")
+                imm.num_locali         = get_int("num_locali")
+                imm.metratura          = get_float("metratura")
+                imm.spese_notarili     = get_float("spese_notarili")
                 imm.spese_condominiali = get_float("spese_condominiali")
-                imm.tipo_immobile    = self._tipo_var.get()
-                imm.stato_loc        = self._stato_var.get()
+                imm.tipo_immobile      = self._tipo_var.get()
+                imm.stato_loc          = self._stato_var.get()
                 id_amm = get("id_amministratore")
-                imm.id_amministratore = id_amm if id_amm else None
+                imm.id_amministratore  = id_amm if id_amm else None
             else:
                 id_amm = get("id_amministratore") or None
                 self.portfolio.crea_immobile(

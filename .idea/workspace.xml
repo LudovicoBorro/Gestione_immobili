@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="123e7a4c-1e82-425f-a42d-90975a901857" name="Changes" comment="bug fixes">
-      <change afterPath="$PROJECT_DIR$/gui/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gui/app.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gui/main_window.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gui/views/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gui/views/contratti_view.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gui/views/immobili_view.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="123e7a4c-1e82-425f-a42d-90975a901857" name="Changes" comment="introdotta interfaccia gui">
+      <change beforePath="$PROJECT_DIR$/gui/main_window.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/main_window.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui/views/contratti_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/views/contratti_view.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui/views/immobili_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/views/immobili_view.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -120,7 +116,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772722117907</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="introdotta interfaccia gui">
+      <option name="closed" value="true" />
+      <created>1772723043922</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1772723043922</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -141,7 +145,8 @@
     <MESSAGE value="aggiunto portfolio per gestione logica e salvataggio dati, migliorato le classi e aggiunte funzioni per creare dizionari. Struttura molto vicina a database relazionale." />
     <MESSAGE value="aggiunta persistenza dati, vengono salvati su json. aggiunto main per caricare e salvare dati, aggiunte funzioni di business nel portfolio" />
     <MESSAGE value="bug fixes" />
-    <option name="LAST_COMMIT_MESSAGE" value="bug fixes" />
+    <MESSAGE value="introdotta interfaccia gui" />
+    <option name="LAST_COMMIT_MESSAGE" value="introdotta interfaccia gui" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

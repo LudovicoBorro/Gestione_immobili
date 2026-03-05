@@ -28,7 +28,6 @@ class ContrattiView(ctk.CTkFrame):
         self._build()
 
     def _build(self):
-        # Top bar
         top = ctk.CTkFrame(self, fg_color="transparent")
         top.pack(fill="x", pady=(0, 16))
 
@@ -58,10 +57,7 @@ class ContrattiView(ctk.CTkFrame):
             command=self._close_selected
         ).pack(side="right", padx=(0, 8))
 
-        # Summary cards
         self._build_cards()
-
-        # Table
         self._build_table()
         self._refresh_table()
 
@@ -75,10 +71,10 @@ class ContrattiView(ctk.CTkFrame):
             return sum(1 for c in self.portfolio.contratti.values() if c.stato == "chiuso")
 
         cards = [
-            ("Totale",  lambda: len(self.portfolio.contratti),     ACCENT),
-            ("Attivi",  n_attivi,                                   SUCCESS),
-            ("Chiusi",  n_chiusi,                                   TEXT_M),
-            ("€/mese",  lambda: f"€ {self.portfolio.totale_canoni_mensili():,.0f}", WARNING),
+            ("Totale", lambda: len(self.portfolio.contratti),                          ACCENT),
+            ("Attivi", n_attivi,                                                        SUCCESS),
+            ("Chiusi", n_chiusi,                                                        TEXT_M),
+            ("€/mese", lambda: f"€ {self.portfolio.totale_canoni_mensili():,.0f}",     WARNING),
         ]
         self._card_labels = {}
         for label, fn, color in cards:
@@ -96,7 +92,7 @@ class ContrattiView(ctk.CTkFrame):
         wrapper = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=12)
         wrapper.pack(fill="both", expand=True)
 
-        cols   = ["ID Contratto", "Immobile", "Conduttori", "Inizio", "Fine", "Canone €/mese", "Stato"]
+        cols    = ["ID Contratto", "Immobile", "Conduttori", "Inizio", "Fine", "Canone €/mese", "Stato"]
         weights = [1, 1, 2, 1, 1, 1, 1]
 
         header = ctk.CTkFrame(wrapper, fg_color="#131929", corner_radius=0)
@@ -134,18 +130,22 @@ class ContrattiView(ctk.CTkFrame):
             row_frame.pack(fill="x")
             row_frame.pack_propagate(False)
 
-            cond_str = ", ".join(cont.lista_id_conduttori) if cont.lista_id_conduttori else "—"
+            cond_str    = ", ".join(cont.lista_id_conduttori) if cont.lista_id_conduttori else "—"
             stato_color = SUCCESS if cont.stato == "attivo" else TEXT_M
             stato_text  = "✔ Attivo" if cont.stato == "attivo" else "✖ Chiuso"
 
+            # FIX #5: mostra ID + nome immobile per chiarezza
+            imm = self.portfolio.trova_immobile_per_id(cont.id_immobile)
+            imm_label = f"{cont.id_immobile}" + (f" – {imm.nome}" if imm and imm.nome else "")
+
             values = [
-                (cont.id_contratto,                              TEXT_M),
-                (cont.id_immobile,                               TEXT_P),
-                (cond_str,                                       TEXT_P),
-                (cont.data_inizio or "—",                        TEXT_P),
-                (cont.data_fine or "—",                          TEXT_P),
-                (f"€ {cont.canone_mensile:,.0f}",                SUCCESS),
-                (stato_text,                                     stato_color),
+                (cont.id_contratto,                    TEXT_M),
+                (imm_label,                            TEXT_P),
+                (cond_str,                             TEXT_P),
+                (cont.data_inizio or "—",              TEXT_P),
+                (cont.data_fine or "—",                TEXT_P),
+                (f"€ {cont.canone_mensile:,.0f}",      SUCCESS),
+                (stato_text,                           stato_color),
             ]
             for i, (val, color) in enumerate(values):
                 lbl = ctk.CTkLabel(
@@ -190,11 +190,11 @@ class ContrattiView(ctk.CTkFrame):
 class ContrattoForm(ctk.CTkToplevel):
     def __init__(self, parent, portfolio, on_save_cb):
         super().__init__(parent)
-        self.portfolio = portfolio
+        self.portfolio  = portfolio
         self.on_save_cb = on_save_cb
 
         self.title("Nuovo Contratto")
-        self.geometry("520x580")
+        self.geometry("520x600")
         self.resizable(False, False)
         self.configure(fg_color=BG_MAIN)
         self.grab_set()
@@ -216,14 +216,19 @@ class ContrattoForm(ctk.CTkToplevel):
 
         self._entries = {}
 
-        # Immobile selector
-        liberi = [imm.id_immobile for imm in self.portfolio.immobili_liberi()]
-        self._imm_var = tk.StringVar(value=liberi[0] if liberi else "")
+        # FIX #5: dropdown mostra "ID – Nome" per leggibilità
+        immobili_liberi = self.portfolio.immobili_liberi()
+        opzioni = [
+            f"{imm.id_immobile} – {imm.nome or '?'}"
+            for imm in immobili_liberi
+        ]
+        self._imm_var = tk.StringVar(value=opzioni[0] if opzioni else "")
+
         ctk.CTkLabel(scroll, text="Immobile (liberi disponibili) *",
                      font=ctk.CTkFont(size=12), text_color=TEXT_M
                      ).pack(anchor="w", padx=12, pady=(10, 2))
-        if liberi:
-            ctk.CTkOptionMenu(scroll, variable=self._imm_var, values=liberi,
+        if opzioni:
+            ctk.CTkOptionMenu(scroll, variable=self._imm_var, values=opzioni,
                               fg_color=BG_INPUT, button_color=ACCENT,
                               text_color=TEXT_P, font=ctk.CTkFont(size=13), height=36
                               ).pack(fill="x", padx=12, pady=(0, 2))
@@ -243,7 +248,6 @@ class ContrattoForm(ctk.CTkToplevel):
         cond_entry.pack(fill="x", padx=12, pady=(0, 2))
         self._entries["conduttori"] = cond_entry
 
-        # Available conduttori hint
         if self.portfolio.conduttori:
             hint = "Conduttori: " + ", ".join(
                 f"{c.id_conduttore} ({c.cognome})"
@@ -268,7 +272,6 @@ class ContrattoForm(ctk.CTkToplevel):
             entry.pack(fill="x", padx=12, pady=(0, 2))
             self._entries[key] = entry
 
-        # Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(fill="x", padx=16, pady=(0, 16))
 
@@ -290,11 +293,14 @@ class ContrattoForm(ctk.CTkToplevel):
     def _save(self):
         def get(k): return self._entries[k].get().strip()
         try:
-            id_imm = self._imm_var.get()
-            if not id_imm:
+            raw_opzione = self._imm_var.get()
+            if not raw_opzione:
                 raise ValueError("Nessun immobile libero selezionato.")
 
-            raw_cond = get("conduttori")
+            # FIX #5: estrae solo l'ID dalla stringa "ID – Nome"
+            id_imm = raw_opzione.split(" – ")[0].strip()
+
+            raw_cond  = get("conduttori")
             lista_cond = [c.strip() for c in raw_cond.split(",") if c.strip()]
             if not lista_cond:
                 raise ValueError("Inserisci almeno un ID conduttore.")

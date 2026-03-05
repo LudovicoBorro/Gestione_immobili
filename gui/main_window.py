@@ -6,8 +6,8 @@ from gui.views.contratti_view import ContrattiView
 BG_SIDEBAR   = "#0f1117"
 BG_MAIN      = "#161b27"
 BG_CARD      = "#1e2535"
-ACCENT       = "#3b82f6"       # blue-500
-ACCENT_HOVER = "#2563eb"       # blue-600
+ACCENT       = "#3b82f6"
+ACCENT_HOVER = "#2563eb"
 TEXT_PRIMARY = "#f1f5f9"
 TEXT_MUTED   = "#64748b"
 BORDER       = "#2d3748"
@@ -17,9 +17,8 @@ WARNING      = "#f59e0b"
 
 class MainWindow:
     def __init__(self, root: ctk.CTk, portfolio):
-        self.root = root
+        self.root      = root
         self.portfolio = portfolio
-        self._active_btn = None
         self._views: dict[str, ctk.CTkFrame] = {}
 
         self._build_layout()
@@ -32,7 +31,6 @@ class MainWindow:
     def _build_layout(self):
         self.root.configure(fg_color=BG_MAIN)
 
-        # Sidebar
         self.sidebar = ctk.CTkFrame(
             self.root, width=220, corner_radius=0,
             fg_color=BG_SIDEBAR, border_width=0
@@ -40,29 +38,23 @@ class MainWindow:
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
 
-        # Right column
         right = ctk.CTkFrame(self.root, fg_color=BG_MAIN, corner_radius=0)
         right.pack(side="left", fill="both", expand=True)
 
-        # Header bar
         self.header = ctk.CTkFrame(right, height=60, fg_color=BG_SIDEBAR, corner_radius=0)
         self.header.pack(fill="x")
         self.header.pack_propagate(False)
 
-        # Content area
         self.content = ctk.CTkFrame(right, fg_color=BG_MAIN, corner_radius=0)
         self.content.pack(fill="both", expand=True, padx=24, pady=20)
 
     # ── Sidebar ──────────────────────────────────────────
 
     def _build_sidebar(self):
-        # Logo / brand
         logo_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
         logo_frame.pack(fill="x", padx=20, pady=(28, 32))
 
-        ctk.CTkLabel(
-            logo_frame, text="🏢", font=ctk.CTkFont(size=28)
-        ).pack(anchor="w")
+        ctk.CTkLabel(logo_frame, text="🏢", font=ctk.CTkFont(size=28)).pack(anchor="w")
         ctk.CTkLabel(
             logo_frame, text="GestImm",
             font=ctk.CTkFont(family="Georgia", size=18, weight="bold"),
@@ -70,29 +62,24 @@ class MainWindow:
         ).pack(anchor="w")
         ctk.CTkLabel(
             logo_frame, text="Portfolio Manager",
-            font=ctk.CTkFont(size=11),
-            text_color=TEXT_MUTED
+            font=ctk.CTkFont(size=11), text_color=TEXT_MUTED
         ).pack(anchor="w")
 
-        # Separator
         ctk.CTkFrame(self.sidebar, height=1, fg_color=BORDER).pack(fill="x", padx=16, pady=(0, 20))
 
-        # Nav label
         ctk.CTkLabel(
             self.sidebar, text="NAVIGAZIONE",
-            font=ctk.CTkFont(size=10, weight="bold"),
-            text_color=TEXT_MUTED
+            font=ctk.CTkFont(size=10, weight="bold"), text_color=TEXT_MUTED
         ).pack(anchor="w", padx=20, pady=(0, 8))
 
-        # Nav buttons
         nav_items = [
             ("immobili",  "🏠  Immobili"),
             ("contratti", "📄  Contratti"),
         ]
+        self._nav_btns = {}
         for key, label in nav_items:
             self._nav_button(key, label)
 
-        # Bottom: stats summary
         self._build_sidebar_stats()
 
     def _nav_button(self, key: str, label: str):
@@ -107,10 +94,6 @@ class MainWindow:
             command=lambda k=key: self._show_view(k)
         )
         btn.pack(fill="x", padx=12, pady=2)
-        btn._key = key
-        # store for active highlight
-        if not hasattr(self, "_nav_btns"):
-            self._nav_btns = {}
         self._nav_btns[key] = btn
 
     def _build_sidebar_stats(self):
@@ -122,8 +105,7 @@ class MainWindow:
 
         ctk.CTkLabel(
             stats_frame, text="Riepilogo",
-            font=ctk.CTkFont(size=11, weight="bold"),
-            text_color=TEXT_MUTED
+            font=ctk.CTkFont(size=11, weight="bold"), text_color=TEXT_MUTED
         ).pack(anchor="w", padx=12, pady=(10, 4))
 
         self.stat_immobili = ctk.CTkLabel(
@@ -133,13 +115,15 @@ class MainWindow:
         self.stat_immobili.pack(anchor="w", padx=12, pady=1)
 
         self.stat_contratti = ctk.CTkLabel(
-            stats_frame, text=f"Contratti attivi: {sum(1 for c in self.portfolio.contratti.values() if c.stato == 'attivo')}",
+            stats_frame,
+            text=f"Contratti attivi: {sum(1 for c in self.portfolio.contratti.values() if c.stato == 'attivo')}",
             font=ctk.CTkFont(size=12), text_color=TEXT_PRIMARY
         )
         self.stat_contratti.pack(anchor="w", padx=12, pady=1)
 
         self.stat_canoni = ctk.CTkLabel(
-            stats_frame, text=f"Canoni/mese: €{self.portfolio.totale_canoni_mensili():,.0f}",
+            stats_frame,
+            text=f"Canoni/mese: €{self.portfolio.totale_canoni_mensili():,.0f}",
             font=ctk.CTkFont(size=12), text_color=SUCCESS
         )
         self.stat_canoni.pack(anchor="w", padx=12, pady=(1, 10))
@@ -154,7 +138,6 @@ class MainWindow:
         )
         self.header_title.pack(side="left", padx=24)
 
-        # Save button
         ctk.CTkButton(
             self.header, text="💾  Salva",
             width=100, height=34,
@@ -167,7 +150,6 @@ class MainWindow:
     # ── View switching ────────────────────────────────────
 
     def _show_view(self, key: str):
-        # Highlight active nav button
         for k, btn in self._nav_btns.items():
             if k == key:
                 btn.configure(fg_color=ACCENT, text_color=TEXT_PRIMARY)
@@ -177,11 +159,9 @@ class MainWindow:
         titles = {"immobili": "🏠  Gestione Immobili", "contratti": "📄  Gestione Contratti"}
         self.header_title.configure(text=titles.get(key, ""))
 
-        # Hide all frames
         for frame in self._views.values():
             frame.pack_forget()
 
-        # Create view lazily
         if key not in self._views:
             if key == "immobili":
                 frame = ImmobiliView(self.content, self.portfolio, self._refresh_stats)
@@ -191,7 +171,12 @@ class MainWindow:
                 return
             self._views[key] = frame
 
-        self._views[key].pack(fill="both", expand=True)
+        view = self._views[key]
+        view.pack(fill="both", expand=True)
+
+        # FIX #6: aggiorna la tabella ogni volta che la view viene mostrata
+        if hasattr(view, "_refresh_table"):
+            view._refresh_table()
 
     # ── Helpers ───────────────────────────────────────────
 
