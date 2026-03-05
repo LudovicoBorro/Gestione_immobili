@@ -96,6 +96,7 @@ class Immobile:
     def sublocazione_cat(self, sublocazione_cat: int):
         if not isinstance(sublocazione_cat, int) or sublocazione_cat < 0:
             raise ValueError("Sublocazione catastale errata!!")
+        self._sublocazione_cat = sublocazione_cat
 
     @property
     def prezzo_acq(self):
@@ -133,7 +134,7 @@ class Immobile:
 
     @spese_notarili.setter
     def spese_notarili(self, spese_notarili: float):
-        if spese_notarili <= 0:
+        if spese_notarili < 0:
             raise ValueError("Spese notarili errate!!")
         self._spese_notarili = spese_notarili
 

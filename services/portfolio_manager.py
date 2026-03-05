@@ -129,8 +129,8 @@ class Portfolio:
             imm.indirizzo = indirizzo
             imm.citta = citta
             imm.data_acquisto = data_acquisto
-            imm.foglio = foglio_cat
-            imm.numero = numero_cat
+            imm.foglio_cat = foglio_cat
+            imm.numero_cat = numero_cat
             imm.sublocazione_cat = sublocazione_cat
             imm.prezzo_acq = prezzo_acq
             imm.num_locali = num_locali

@@ -90,9 +90,10 @@ class Contratto:    # durata contratto è espressa in mesi
 
     @stato.setter
     def stato(self, stato: str):
-        if stato.lower().strip() == "chiuso" or stato.lower().strip() == "attivo":
+        if stato.lower().strip() in {"chiuso", "attivo"}:
             self._stato = stato
-        raise ValueError(f"Stato {stato} non valido!!")
+        else:
+            raise ValueError(f"Stato {stato} non valido!!")
 
     @property
     def data_fine_effettiva(self):
@@ -130,7 +131,9 @@ class Contratto:    # durata contratto è espressa in mesi
             "durata_contratto": self.durata_contratto,
             "data_inizio": self.data_inizio,
             "data_fine": self.data_fine,
-            "canone_mensile": self.canone_mensile
+            "canone_mensile": self.canone_mensile,
+            "stato": self.stato,
+            "data_fine_effettiva": self.data_fine_effettiva
         }
 
     @staticmethod
@@ -143,5 +146,7 @@ class Contratto:    # durata contratto è espressa in mesi
         con.data_inizio = data.get("data_inizio")
         con.data_fine = data.get("data_fine")
         con.canone_mensile = data.get("canone_mensile")
+        con.stato = data.get("stato", "attivo")
+        con.data_fine_effettiva = data.get("data_fine_effettiva")
         return con
 
