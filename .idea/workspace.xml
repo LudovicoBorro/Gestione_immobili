@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="123e7a4c-1e82-425f-a42d-90975a901857" name="Changes" comment="aggiunta persistenza dati, vengono salvati su json. aggiunto main per caricare e salvare dati, aggiunte funzioni di business nel portfolio">
+    <list default="true" id="123e7a4c-1e82-425f-a42d-90975a901857" name="Changes" comment="bug fixes">
+      <change afterPath="$PROJECT_DIR$/gui/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gui/app.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gui/main_window.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gui/views/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gui/views/contratti_view.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gui/views/immobili_view.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/contratto_locazione.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/contratto_locazione.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/immobile.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/immobile.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/portfolio_manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/portfolio_manager.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,20 +45,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;ai.playground.ignore.import.keys.banner.in.settings&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;proofread&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.main.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "ai.playground.ignore.import.keys.banner.in.settings": "true",
+    "git-widget-placeholder": "master",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "proofread",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Dario Lampa\Documents\Esercizi programmazione\Python\Progetto gestione immobili\models" />
@@ -100,7 +104,23 @@
       <option name="project" value="LOCAL" />
       <updated>1772271974465</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="bug fixes">
+      <option name="closed" value="true" />
+      <created>1772716374871</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1772716374877</updated>
+    </task>
+    <task id="LOCAL-00004" summary="bug fixes">
+      <option name="closed" value="true" />
+      <created>1772722117907</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1772722117907</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -120,7 +140,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="aggiunto portfolio per gestione logica e salvataggio dati, migliorato le classi e aggiunte funzioni per creare dizionari. Struttura molto vicina a database relazionale." />
     <MESSAGE value="aggiunta persistenza dati, vengono salvati su json. aggiunto main per caricare e salvare dati, aggiunte funzioni di business nel portfolio" />
-    <option name="LAST_COMMIT_MESSAGE" value="aggiunta persistenza dati, vengono salvati su json. aggiunto main per caricare e salvare dati, aggiunte funzioni di business nel portfolio" />
+    <MESSAGE value="bug fixes" />
+    <option name="LAST_COMMIT_MESSAGE" value="bug fixes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
