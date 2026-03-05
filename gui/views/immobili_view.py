@@ -2,6 +2,7 @@ import customtkinter as ctk
 from tkinter import messagebox
 import tkinter as tk
 from models.immobile import Immobile
+from models.amministratore import Amministratore
 
 BG_MAIN   = "#161b27"
 BG_CARD   = "#1e2535"
@@ -17,6 +18,7 @@ BORDER    = "#2d3748"
 ROW_EVEN  = "#1e2535"
 ROW_ODD   = "#1a2030"
 ROW_SEL   = "#1e3a5f"
+HIGHLIGHT = "#2a3f5f"
 
 
 class ImmobiliView(ctk.CTkFrame):
@@ -31,7 +33,6 @@ class ImmobiliView(ctk.CTkFrame):
     # ── Layout ──────────────────────────────────────────
 
     def _build(self):
-        # Top bar: search + buttons
         top = ctk.CTkFrame(self, fg_color="transparent")
         top.pack(fill="x", pady=(0, 16))
 
@@ -69,10 +70,7 @@ class ImmobiliView(ctk.CTkFrame):
             command=self._delete_selected
         ).pack(side="right", padx=(0, 8))
 
-        # Summary cards row
         self._build_summary_cards()
-
-        # Table
         self._build_table()
         self._refresh_table()
 
@@ -120,14 +118,11 @@ class ImmobiliView(ctk.CTkFrame):
         )
         self.table_scroll.pack(fill="both", expand=True)
         self._col_weights = weights
-        self._cols = cols
 
     def _refresh_table(self, *_):
-        # Update cards
         for label, (lbl, fn) in self._card_labels.items():
             lbl.configure(text=str(fn()))
 
-        # Clear rows
         for widget in self.table_scroll.winfo_children():
             widget.destroy()
         self._row_frames = {}
@@ -135,7 +130,6 @@ class ImmobiliView(ctk.CTkFrame):
         query = self.search_var.get().lower()
         items = list(self.portfolio.immobili.values())
 
-        # FIX #1: protezione da nome/citta None nel filtro ricerca
         if query:
             items = [i for i in items
                      if query in (i.nome or "").lower()
@@ -192,7 +186,6 @@ class ImmobiliView(ctk.CTkFrame):
             messagebox.showerror("Errore", "Non puoi eliminare un immobile locato. Chiudi prima il contratto.")
             return
         if messagebox.askyesno("Conferma", f"Eliminare l'immobile '{imm.nome}'?"):
-            # FIX #4: rimuove anche i contratti chiusi collegati prima di eliminare l'immobile
             contratti_da_rimuovere = [
                 cid for cid, c in self.portfolio.contratti.items()
                 if c.id_immobile == self._selected_id
@@ -205,7 +198,7 @@ class ImmobiliView(ctk.CTkFrame):
             self._refresh_table()
             self.refresh_cb()
 
-    # ── Form: nuovo / modifica ────────────────────────────
+    # ── Form ─────────────────────────────────────────────
 
     def _open_form_new(self):
         ImmobileForm(self, self.portfolio, None, self._on_form_saved)
@@ -231,9 +224,14 @@ class ImmobileForm(ctk.CTkToplevel):
         self.immobile    = immobile
         self.on_save_cb  = on_save_cb
         self.is_edit     = immobile is not None
+        self._selected_amm_id = None
+
+        # Se stiamo modificando, precarica l'amministratore già collegato
+        if self.is_edit and immobile.id_amministratore:
+            self._selected_amm_id = immobile.id_amministratore
 
         self.title("Modifica Immobile" if self.is_edit else "Nuovo Immobile")
-        self.geometry("560x680")
+        self.geometry("580x720")
         self.resizable(False, False)
         self.configure(fg_color=BG_MAIN)
         self.grab_set()
@@ -259,30 +257,33 @@ class ImmobileForm(ctk.CTkToplevel):
         self._entries = {}
 
         fields = [
-            ("nome",               "Nome immobile *",            "text"),
-            ("indirizzo",          "Indirizzo *",                "text"),
-            ("citta",              "Città *",                    "text"),
-            ("data_acquisto",      "Data acquisto (gg/mm/aaaa)", "text"),
-            ("foglio_cat",         "Foglio catastale",           "int"),
-            ("numero_cat",         "Numero catastale",           "int"),
-            ("sublocazione_cat",   "Sublocazione catastale",     "int"),
-            ("prezzo_acq",         "Prezzo acquisto (€) *",      "float"),
-            ("num_locali",         "Numero locali *",            "int"),
-            ("metratura",          "Metratura (m²) *",           "float"),
-            ("spese_notarili",     "Spese notarili (€)",         "float"),
-            ("spese_condominiali", "Spese condominiali (€)",     "float"),
+            ("nome",               "Nome immobile *"),
+            ("indirizzo",          "Indirizzo *"),
+            ("citta",              "Città *"),
+            ("data_acquisto",      "Data acquisto (gg/mm/aaaa)"),
+            ("foglio_cat",         "Foglio catastale"),
+            ("numero_cat",         "Numero catastale"),
+            ("sublocazione_cat",   "Sublocazione catastale"),
+            ("prezzo_acq",         "Prezzo acquisto (€) *"),
+            ("num_locali",         "Numero locali *"),
+            ("metratura",          "Metratura (m²) *"),
+            ("spese_notarili",     "Spese notarili (€)"),
+            ("spese_condominiali", "Spese condominiali (€)"),
         ]
 
-        for key, label, _ in fields:
+        for key, label in fields:
             self._field_row(scroll, key, label)
 
         self._tipo_var  = tk.StringVar(value="residenziale")
         self._stato_var = tk.StringVar(value="libero")
 
-        self._dropdown_row(scroll, "Tipo immobile",    self._tipo_var,  ["residenziale", "commerciale"])
-        self._dropdown_row(scroll, "Stato locazione",  self._stato_var, ["libero", "locato", "personale"])
-        self._field_row(scroll, "id_amministratore", "ID Amministratore (opz.)")
+        self._dropdown_row(scroll, "Tipo immobile",   self._tipo_var,  ["residenziale", "commerciale"])
+        self._dropdown_row(scroll, "Stato locazione", self._stato_var, ["libero", "locato", "personale"])
 
+        # ── Sezione Amministratore ───────────────────────
+        self._build_amm_section(scroll)
+
+        # ── Bottoni ──────────────────────────────────────
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(fill="x", padx=16, pady=(0, 16))
 
@@ -300,6 +301,140 @@ class ImmobileForm(ctk.CTkToplevel):
             font=ctk.CTkFont(size=13), corner_radius=8,
             command=self._save
         ).pack(side="right")
+
+    # ── Sezione ricerca amministratore ───────────────────
+
+    def _build_amm_section(self, parent):
+        ctk.CTkFrame(parent, height=1, fg_color=BORDER).pack(fill="x", padx=12, pady=(16, 12))
+
+        ctk.CTkLabel(
+            parent, text="Amministratore (opzionale)",
+            font=ctk.CTkFont(size=13, weight="bold"), text_color=TEXT_P
+        ).pack(anchor="w", padx=12, pady=(0, 8))
+
+        # Badge: mostra chi è selezionato
+        self._amm_badge_var = tk.StringVar(value=self._get_amm_badge_text())
+        self._amm_badge = ctk.CTkLabel(
+            parent, textvariable=self._amm_badge_var,
+            font=ctk.CTkFont(size=12),
+            text_color=SUCCESS if self._selected_amm_id else TEXT_M
+        )
+        self._amm_badge.pack(anchor="w", padx=12, pady=(0, 8))
+
+        # Riga ricerca + bottone crea
+        ctk.CTkLabel(parent, text="Cerca per nome o cognome",
+                     font=ctk.CTkFont(size=12), text_color=TEXT_M
+                     ).pack(anchor="w", padx=12, pady=(0, 4))
+
+        search_row = ctk.CTkFrame(parent, fg_color="transparent")
+        search_row.pack(fill="x", padx=12, pady=(0, 4))
+
+        self._amm_search_var = tk.StringVar()
+        self._amm_search_var.trace_add("write", lambda *_: self._refresh_amm_list())
+
+        self._amm_search_entry = ctk.CTkEntry(
+            search_row, textvariable=self._amm_search_var,
+            placeholder_text="es. Rossi, Marco...",
+            height=36, fg_color=BG_INPUT,
+            border_color=BORDER, text_color=TEXT_P,
+            font=ctk.CTkFont(size=13)
+        )
+        self._amm_search_entry.pack(side="left", fill="x", expand=True)
+
+        ctk.CTkButton(
+            search_row, text="＋ Crea nuovo", width=120, height=36,
+            fg_color="transparent", hover_color=BG_INPUT,
+            border_width=1, border_color=ACCENT,
+            text_color=ACCENT,
+            font=ctk.CTkFont(size=12), corner_radius=8,
+            command=self._open_crea_amm
+        ).pack(side="left", padx=(8, 0))
+
+        # Lista risultati
+        self._amm_list_frame = ctk.CTkScrollableFrame(
+            parent, fg_color=BG_INPUT, corner_radius=8, height=110
+        )
+        self._amm_list_frame.pack(fill="x", padx=12, pady=(0, 4))
+
+        # Bottone deseleziona
+        ctk.CTkButton(
+            parent, text="✕  Rimuovi amministratore", height=28,
+            fg_color="transparent", hover_color=BG_INPUT,
+            text_color=TEXT_M, font=ctk.CTkFont(size=11),
+            corner_radius=6, anchor="w",
+            command=self._deselect_amm
+        ).pack(anchor="w", padx=12, pady=(0, 4))
+
+        self._refresh_amm_list()
+
+    def _get_amm_badge_text(self):
+        if not self._selected_amm_id:
+            return "Nessun amministratore selezionato"
+        amm = self.portfolio.trova_amministratore_per_id(self._selected_amm_id)
+        if amm:
+            return f"✔  {amm.nome} {amm.cognome}"
+        return "Nessun amministratore selezionato"
+
+    def _refresh_amm_list(self, *_):
+        for w in self._amm_list_frame.winfo_children():
+            w.destroy()
+
+        query = self._amm_search_var.get().lower().strip()
+        amms  = list(self.portfolio.amministratori.values())
+
+        if query:
+            amms = [a for a in amms
+                    if query in (a.nome or "").lower()
+                    or query in (a.cognome or "").lower()]
+
+        if not amms:
+            ctk.CTkLabel(
+                self._amm_list_frame,
+                text="Nessun amministratore trovato" if query else "Nessun amministratore registrato",
+                font=ctk.CTkFont(size=11), text_color=TEXT_M
+            ).pack(padx=8, pady=6)
+            return
+
+        for amm in amms:
+            is_sel = amm.id_amministratore == self._selected_amm_id
+            bg     = HIGHLIGHT if is_sel else "transparent"
+            color  = TEXT_P    if is_sel else TEXT_M
+
+            row = ctk.CTkFrame(self._amm_list_frame, fg_color=bg, corner_radius=6, cursor="hand2")
+            row.pack(fill="x", pady=1)
+
+            ctk.CTkLabel(
+                row,
+                text=f"{'✔  ' if is_sel else '     '}{amm.nome} {amm.cognome}",
+                font=ctk.CTkFont(size=12, weight="bold" if is_sel else "normal"),
+                text_color=color, anchor="w"
+            ).pack(side="left", padx=8, pady=5)
+
+            row.bind("<Button-1>", lambda e, a=amm: self._select_amm(a))
+            for child in row.winfo_children():
+                child.bind("<Button-1>", lambda e, a=amm: self._select_amm(a))
+
+    def _select_amm(self, amm: Amministratore):
+        self._selected_amm_id = amm.id_amministratore
+        self._amm_badge_var.set(self._get_amm_badge_text())
+        self._amm_badge.configure(text_color=SUCCESS)
+        self._refresh_amm_list()
+
+    def _deselect_amm(self):
+        self._selected_amm_id = None
+        self._amm_badge_var.set("Nessun amministratore selezionato")
+        self._amm_badge.configure(text_color=TEXT_M)
+        self._refresh_amm_list()
+
+    def _open_crea_amm(self):
+        AmmForm(self, self.portfolio, self._on_amm_created)
+
+    def _on_amm_created(self, amm: Amministratore):
+        """Seleziona automaticamente il nuovo amministratore appena creato."""
+        self._select_amm(amm)
+        self._amm_search_var.set("")
+
+    # ── Helpers form ─────────────────────────────────────
 
     def _field_row(self, parent, key, label):
         ctk.CTkLabel(parent, text=label, font=ctk.CTkFont(size=12),
@@ -328,7 +463,6 @@ class ImmobileForm(ctk.CTkToplevel):
             "prezzo_acq": imm.prezzo_acq, "num_locali": imm.num_locali,
             "metratura": imm.metratura, "spese_notarili": imm.spese_notarili,
             "spese_condominiali": imm.spese_condominiali,
-            "id_amministratore": imm.id_amministratore,
         }
         for key, val in mapping.items():
             if key in self._entries and val is not None:
@@ -339,7 +473,7 @@ class ImmobileForm(ctk.CTkToplevel):
             self._stato_var.set(imm.stato_loc)
 
     def _save(self):
-        def get(key):             return self._entries[key].get().strip()
+        def get(key):       return self._entries[key].get().strip()
         def get_float(key):
             v = get(key); return float(v) if v else 0.0
         def get_int(key):
@@ -362,10 +496,8 @@ class ImmobileForm(ctk.CTkToplevel):
                 imm.spese_condominiali = get_float("spese_condominiali")
                 imm.tipo_immobile      = self._tipo_var.get()
                 imm.stato_loc          = self._stato_var.get()
-                id_amm = get("id_amministratore")
-                imm.id_amministratore  = id_amm if id_amm else None
+                imm.id_amministratore  = self._selected_amm_id
             else:
-                id_amm = get("id_amministratore") or None
                 self.portfolio.crea_immobile(
                     nome=get("nome"),
                     indirizzo=get("indirizzo"),
@@ -381,9 +513,94 @@ class ImmobileForm(ctk.CTkToplevel):
                     spese_condominiali=get_float("spese_condominiali"),
                     tipo_immobile=self._tipo_var.get(),
                     stato_loc=self._stato_var.get(),
-                    id_amministratore=id_amm
+                    id_amministratore=self._selected_amm_id
                 )
             self.on_save_cb()
+            self.destroy()
+        except ValueError as e:
+            messagebox.showerror("Errore di validazione", str(e), parent=self)
+        except Exception as e:
+            messagebox.showerror("Errore", str(e), parent=self)
+
+
+# ── Amministratore Form Dialog ────────────────────────────────────────────────
+
+class AmmForm(ctk.CTkToplevel):
+    """Dialog per creare un nuovo amministratore, lanciato dall'interno di ImmobileForm."""
+
+    def __init__(self, parent, portfolio, on_save_cb):
+        super().__init__(parent)
+        self.portfolio  = portfolio
+        self.on_save_cb = on_save_cb   # callback(amm: Amministratore)
+
+        self.title("Nuovo Amministratore")
+        self.geometry("440x480")
+        self.resizable(False, False)
+        self.configure(fg_color=BG_MAIN)
+        self.grab_set()
+
+        self._build()
+
+    def _build(self):
+        ctk.CTkLabel(
+            self, text="Nuovo Amministratore",
+            font=ctk.CTkFont(family="Georgia", size=17, weight="bold"),
+            text_color=TEXT_P
+        ).pack(pady=(20, 4), padx=24, anchor="w")
+
+        ctk.CTkLabel(self, text="Inserisci i dati dell'amministratore",
+                     font=ctk.CTkFont(size=12), text_color=TEXT_M
+                     ).pack(padx=24, anchor="w", pady=(0, 16))
+
+        scroll = ctk.CTkScrollableFrame(self, fg_color=BG_CARD, corner_radius=12)
+        scroll.pack(fill="both", expand=True, padx=16, pady=(0, 12))
+
+        self._entries = {}
+        fields = [
+            ("nome",              "Nome *"),
+            ("cognome",           "Cognome *"),
+            ("contatto_tel",      "Telefono (10 cifre) *"),
+            ("email",             "Email"),
+            ("indirizzo_ufficio", "Indirizzo ufficio"),
+        ]
+        for key, label in fields:
+            ctk.CTkLabel(scroll, text=label, font=ctk.CTkFont(size=12),
+                         text_color=TEXT_M).pack(anchor="w", padx=12, pady=(10, 2))
+            entry = ctk.CTkEntry(scroll, height=36, fg_color=BG_INPUT,
+                                 border_color=BORDER, text_color=TEXT_P,
+                                 font=ctk.CTkFont(size=13))
+            entry.pack(fill="x", padx=12, pady=(0, 2))
+            self._entries[key] = entry
+
+        btn_frame = ctk.CTkFrame(self, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=16, pady=(0, 16))
+
+        ctk.CTkButton(
+            btn_frame, text="Annulla", width=120, height=38,
+            fg_color=BG_CARD, hover_color=BG_INPUT,
+            border_width=1, border_color=BORDER,
+            font=ctk.CTkFont(size=13), corner_radius=8,
+            command=self.destroy
+        ).pack(side="left")
+
+        ctk.CTkButton(
+            btn_frame, text="Crea amministratore", height=38,
+            fg_color=ACCENT, hover_color=ACCENT_H,
+            font=ctk.CTkFont(size=13), corner_radius=8,
+            command=self._save
+        ).pack(side="right")
+
+    def _save(self):
+        def get(k): return self._entries[k].get().strip()
+        try:
+            amm = self.portfolio.crea_amministratore(
+                nome=get("nome"),
+                cognome=get("cognome"),
+                contatto_tel=get("contatto_tel"),
+                email=get("email"),
+                indirizzo_ufficio=get("indirizzo_ufficio")
+            )
+            self.on_save_cb(amm)
             self.destroy()
         except ValueError as e:
             messagebox.showerror("Errore di validazione", str(e), parent=self)

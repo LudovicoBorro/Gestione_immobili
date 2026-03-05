@@ -1,6 +1,8 @@
 import customtkinter as ctk
 from gui.views.immobili_view import ImmobiliView
 from gui.views.contratti_view import ContrattiView
+from gui.views.conduttori_view import ConduttoriView
+from gui.views.amministratori_view import AmministratoriView
 
 # ── Palette ──────────────────────────────────────────────
 BG_SIDEBAR   = "#0f1117"
@@ -12,7 +14,6 @@ TEXT_PRIMARY = "#f1f5f9"
 TEXT_MUTED   = "#64748b"
 BORDER       = "#2d3748"
 SUCCESS      = "#10b981"
-WARNING      = "#f59e0b"
 
 
 class MainWindow:
@@ -73,8 +74,10 @@ class MainWindow:
         ).pack(anchor="w", padx=20, pady=(0, 8))
 
         nav_items = [
-            ("immobili",  "🏠  Immobili"),
-            ("contratti", "📄  Contratti"),
+            ("immobili",        "🏠  Immobili"),
+            ("contratti",       "📄  Contratti"),
+            ("conduttori",      "👤  Conduttori"),
+            ("amministratori",  "🔑  Amministratori"),
         ]
         self._nav_btns = {}
         for key, label in nav_items:
@@ -121,6 +124,13 @@ class MainWindow:
         )
         self.stat_contratti.pack(anchor="w", padx=12, pady=1)
 
+        self.stat_conduttori = ctk.CTkLabel(
+            stats_frame,
+            text=f"Conduttori: {len(self.portfolio.conduttori)}",
+            font=ctk.CTkFont(size=12), text_color=TEXT_PRIMARY
+        )
+        self.stat_conduttori.pack(anchor="w", padx=12, pady=1)
+
         self.stat_canoni = ctk.CTkLabel(
             stats_frame,
             text=f"Canoni/mese: €{self.portfolio.totale_canoni_mensili():,.0f}",
@@ -151,12 +161,17 @@ class MainWindow:
 
     def _show_view(self, key: str):
         for k, btn in self._nav_btns.items():
-            if k == key:
-                btn.configure(fg_color=ACCENT, text_color=TEXT_PRIMARY)
-            else:
-                btn.configure(fg_color="transparent", text_color=TEXT_MUTED)
+            btn.configure(
+                fg_color=ACCENT if k == key else "transparent",
+                text_color=TEXT_PRIMARY if k == key else TEXT_MUTED
+            )
 
-        titles = {"immobili": "🏠  Gestione Immobili", "contratti": "📄  Gestione Contratti"}
+        titles = {
+            "immobili":       "🏠  Gestione Immobili",
+            "contratti":      "📄  Gestione Contratti",
+            "conduttori":     "👤  Gestione Conduttori",
+            "amministratori": "🔑  Gestione Amministratori",
+        }
         self.header_title.configure(text=titles.get(key, ""))
 
         for frame in self._views.values():
@@ -167,6 +182,10 @@ class MainWindow:
                 frame = ImmobiliView(self.content, self.portfolio, self._refresh_stats)
             elif key == "contratti":
                 frame = ContrattiView(self.content, self.portfolio, self._refresh_stats)
+            elif key == "conduttori":
+                frame = ConduttoriView(self.content, self.portfolio, self._refresh_stats)
+            elif key == "amministratori":
+                frame = AmministratoriView(self.content, self.portfolio, self._refresh_stats)
             else:
                 return
             self._views[key] = frame
@@ -174,7 +193,6 @@ class MainWindow:
         view = self._views[key]
         view.pack(fill="both", expand=True)
 
-        # FIX #6: aggiorna la tabella ogni volta che la view viene mostrata
         if hasattr(view, "_refresh_table"):
             view._refresh_table()
 
@@ -185,6 +203,7 @@ class MainWindow:
         self.stat_contratti.configure(
             text=f"Contratti attivi: {sum(1 for c in self.portfolio.contratti.values() if c.stato == 'attivo')}"
         )
+        self.stat_conduttori.configure(text=f"Conduttori: {len(self.portfolio.conduttori)}")
         self.stat_canoni.configure(
             text=f"Canoni/mese: €{self.portfolio.totale_canoni_mensili():,.0f}"
         )
