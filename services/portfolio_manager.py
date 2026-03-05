@@ -76,11 +76,12 @@ class Portfolio:
             "amministratori": [a.to_dict() for a in self.amministratori.values()],
         }
 
-    # Funzione per calcolare il totale dei canoni mensili da tutti gli immobili locati
+    # Funzione per calcolare il totale dei canoni mensili da tutti gli immobili locati attualmente (contratti attivi)
     def totale_canoni_mensili(self):
         totale = 0
         for c in self.contratti.values():
-            totale += c.canone_mensile
+            if c.stato == "attivo":
+                totale += c.canone_mensile
         return totale
 
     # Funzione che ritorna Immobili liberi (non locati)
@@ -109,14 +110,14 @@ class Portfolio:
 
     # Funzione che ritorna i conduttori di un dato Contratto, attraverso id
     def conduttori_immobile_per_id(self, id_cont: str):
-        conduttori: list[Conduttore] = []
-        try:
-            contr = self.trova_contratto_per_id(id_cont)
-            for cond in contr.lista_id_conduttori:
-                conduttore = self.trova_conduttore_per_id(cond)
-                conduttori.append(conduttore)
-        except ValueError:
+        contr = self.trova_contratto_per_id(id_cont)
+        if contr is None:
             raise ValueError(f"Contratto {id_cont} non esistente!!")
+        conduttori = []
+        for id_cond in contr.lista_id_conduttori:
+            conduttore = self.trova_conduttore_per_id(id_cond)
+            if conduttore is not None:
+                conduttori.append(conduttore)
         return conduttori
 
     # Funzione per creare un immobile e salvarlo
@@ -153,6 +154,9 @@ class Portfolio:
             raise ValueError(f"Immobile {id_immobile} non esistente!!")
         if immobile.stato_loc == "locato":
             raise ValueError(f"Immobile {id_immobile} è già stato locato!")
+        for id_cond in lista_id_conduttori:
+            if id_cond not in self.conduttori:
+                raise ValueError(f"Conduttore {id_cond} non esistente!!")
 
         try:
             cont = Contratto()
